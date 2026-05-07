@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interest Calculator</title>
+    <style>
+        /* ============================================
+           CSS CUSTOM PROPERTIES & THEME DEFINITIONS
+           ============================================ */
+        :root {
+            /* Light theme (default) */
+            --bg: #f5f5f5;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --accent: #0066cc;
+            --border: #ddd;
+            --accent-light: #e6f0ff;
+            --text-secondary: #666;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark-theme {
+            --bg: #1a1a1a;
+            --surface: #2a2a2a;
+            --text: #e0e0e0;
+            --accent: #66b3ff;
+            --border: #444;
+            --accent-light: #1a3a4d;
+            --text-secondary: #999;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.7);
+        }
+
+        body.ocean-theme {
+            --bg: #e8f4f8;
+            --surface: #ffffff;
+            --text: #0a3d5c;
+            --accent: #0066cc;
+            --border: #a8d8ea;
+            --accent-light: #d4e9f7;
+            --text-secondary: #0d5a75;
+            --shadow: 0 2px 8px rgba(10, 61, 92, 0.1);
+            --shadow-hover: 0 4px 12px rgba(10, 61, 92, 0.15);
+        }
+
+        /* ============================================
+           GLOBAL STYLES
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
+            padding: 0 16px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ============================================
+           TOP BAR
+           ============================================ */
+        .top-bar {
+            background-color: var(--surface);
+            padding: 20px;
+            margin: 16px 0;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .top-bar-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .current-date {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ============================================
+           MAIN CARD
+           ============================================ */
+        .card {
+            background-color: var(--surface);
+            padding: 24px;
+            margin: 16px 0;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background-color: var(--surface);
+            color: var(--text);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .checkbox-label {
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ============================================
+           RESULTS DISPLAY
+           ============================================ */
+        .results {
+            background-color: var(--accent-light);
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 15px;
+        }
+
+        .result-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 16px;
+        }
+
+        /* ============================================
+           BUTTONS
+           ============================================ */
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: var(--accent);
+            color: white;
+        }
+
+        button:hover {
+            background-color: var(--accent);
+            opacity: 0.9;
+            box-shadow: var(--shadow-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .button-secondary {
+            background-color: var(--border);
+            color: var(--text);
+        }
+
+        .button-secondary:hover {
+            background-color: var(--text-secondary);
+            color: var(--surface);
+        }
+
+        .button-danger {
+            background-color: #d9534f;
+        }
+
+        .button-danger:hover {
+            background-color: #c9302c;
+        }
+
+        /* ============================================
+           COLLAPSIBLE SECTIONS
+           ============================================ */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            margin-top: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .section-header:hover {
+            background-color: var(--accent-light);
+        }
+
+        .section-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0;
+        }
+
+        .section-toggle {
+            font-size: 20px;
+            color: var(--accent);
+            transition: transform 0.3s;
+        }
+
+        .section-toggle.open {
+            transform: rotate(180deg);
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .section-content.open {
+            max-height: 1000px;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-inner {
+            padding: 16px;
+        }
+
+        /* ============================================
+           HISTORY LIST
+           ============================================ */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-item {
+            background-color: var(--bg);
+            padding: 12px;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent);
+            font-size: 14px;
+        }
+
+        .history-item-header {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .history-item-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
+
+
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+        @media (max-width: 600px) {
+            .container {
+                max-width: 100%;
+            }
+
+            body {
+                padding: 0 12px;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 16px;
+            }
+
+            .card,
+            .section-header,
+            .section-content {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            .app-title {
+                font-size: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .theme-buttons {
+                flex-direction: column;
+            }
+
+            .theme-btn {
+                min-width: unset;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- TOP BAR: Date & Title -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="app-title">Interest Calculator</div>
+                <div class="current-date" id="currentDate">Loading...</div>
+            </div>
+        </div>
+
+        <!-- MAIN CARD: Inputs & Results -->
+        <div class="card">
+            <h2>Calculate</h2>
+
+            <!-- Principal Amount -->
+            <div class="form-group">
+                <label for="principal">Principal Amount (₹)</label>
+                <input type="number" id="principal" placeholder="10000" value="10000" step="0.01" oninput="updatePrincipalWords()">
+                <div id="principalWords" style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Ten Thousand Rupees</div>
+            </div>
+
+            <!-- Interest Rate -->
+            <div class="form-group">
+                <label for="rate">Interest Rate per Month (%)</label>
+                <input type="number" id="rate" placeholder="0.5" value="0.5" step="0.01">
+            </div>
+
+            <!-- Compound Frequency -->
+            <div class="form-group">
+                <label for="compoundFreq">Compound Frequency</label>
+                <select id="compoundFreq" onchange="updateFrequencyInputs()">
+                    <option value="daily">Daily (Date Range)</option>
+                    <option value="monthly">Monthly (Months)</option>
+                    <option value="yearly">Yearly (Years)</option>
+                </select>
+            </div>
+
+            <!-- Date Range Inputs (shown for Daily) -->
+            <div id="dateRangeInputs">
+                <div class="form-group">
+                    <label for="startDate">Start Date</label>
+                    <input type="date" id="startDate">
+                </div>
+
+                <div class="form-group">
+                    <label for="endDate">End Date</label>
+                    <input type="date" id="endDate">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="includeStart">
+                    <label for="includeStart" class="checkbox-label">Include start date in calculation</label>
+                </div>
+
+                <div class="form-group">
+                    <label for="numDays">Number of Days (Manual Override)</label>
+                    <input type="number" id="numDays" placeholder="Auto-calculated" step="0.01" title="Leave blank to auto-calculate from date range">
+                </div>
+            </div>
+            <div id="monthsInput" style="display: none;">
+                <div class="form-group">
+                    <label for="numMonths">Number of Months</label>
+                    <input type="number" id="numMonths" placeholder="12" value="12" step="0.01">
+                </div>
+            </div>
+
+            <!-- Years Input (shown for Yearly) -->
+            <div id="yearsInput" style="display: none;">
+                <div class="form-group">
+                    <label for="numYears">Number of Years</label>
+                    <input type="number" id="numYears" placeholder="1" value="1" step="0.01">
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="results">
+                <div class="result-row">
+                    <span class="result-label" id="periodLabel">Months:</span>
+                    <span class="result-value" id="resultPeriod">0.00</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Interest per Month:</span>
+                    <span class="result-value" id="resultInterestMonth">₹0.00</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Simple Interest:</span>
+                    <span class="result-value" id="resultSimpleInterest">₹0.00</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Compound Interest:</span>
+                    <span class="result-value" id="resultCompoundInterest">₹0.00</span>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button onclick="calculateInterest()">Calculate</button>
+                <button class="button-secondary" onclick="resetForm()">Reset</button>
+            </div>
+        </div>
+
+        <!-- HISTORY PANEL -->
+        <div class="section-header" onclick="toggleSection('history')">
+            <h3>📊 Calculation History</h3>
+            <span class="section-toggle" id="historyToggle">▼</span>
+        </div>
+        <div class="section-content" id="historyContent">
+            <div class="section-inner">
+                <div class="history-list" id="historyList">
+                    <div class="history-empty">No calculations yet</div>
+                </div>
+                <button class="button-danger" onclick="clearHistory()" style="width: 100%; margin-top: 12px;">Clear History</button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        /* ============================================
+           INITIALIZATION
+           ============================================ */
+        function init() {
+            // Set up date inputs (today as default for end date)
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('endDate').value = today;
+            document.getElementById('startDate').value = today;
+
+            // Update current date display
+            updateCurrentDate();
+
+            // Update principal amount in words
+            updatePrincipalWords();
+
+            // Update frequency inputs to show correct input fields
+            updateFrequencyInputs();
+
+            // Load saved state from localStorage
+            loadHistory();
+
+            // Attach event listeners for live calculation
+            ['principal', 'rate', 'startDate', 'endDate', 'includeStart', 'includeToday', 'compoundFreq', 'numMonths', 'numYears', 'numDays'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', handleInputChange);
+                    element.addEventListener('input', handleInputChange);
+                }
+            });
+
+            // Initial calculation
+            calculateInterest();
+
+            // Update date display every second
+            setInterval(updateCurrentDate, 1000);
+
+            // Update end date if "Include today" checkbox is checked
+            setInterval(() => {
+                if (document.getElementById('includeToday').checked && document.getElementById('compoundFreq').value === 'daily') {
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('endDate').value = today;
+                }
+            }, 60000); // Check every minute
+        }
+
+        /* ============================================
+           DATE & TIME FUNCTIONS
+           ============================================ */
+        function updateCurrentDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', options);
+        }
+
+        /* ============================================
+           NUMBER TO WORDS CONVERSION
+           ============================================ */
+        function numberToWords(num) {
+            if (num === 0) return 'Zero Rupees';
+
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+            function convertBelowHundred(n) {
+                if (n === 0) return '';
+                if (n < 10) return ones[n];
+                if (n < 20) return teens[n - 10];
+                return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+            }
+
+            function convertBelowThousand(n) {
+                if (n === 0) return '';
+                const hundreds = Math.floor(n / 100);
+                const remainder = n % 100;
+                let result = '';
+                if (hundreds) result = ones[hundreds] + ' Hundred';
+                if (remainder) result = (result ? result + ' ' : '') + convertBelowHundred(remainder);
+                return result;
+            }
+
+            num = Math.floor(num);
+            if (num === 0) return 'Zero Rupees';
+
+            let result = '';
+
+            // Extract Crore (1,00,00,000)
+            const crores = Math.floor(num / 10000000);
+            num %= 10000000;
+
+            // Extract Lakh (1,00,000)
+            const lakhs = Math.floor(num / 100000);
+            num %= 100000;
+
+            // Extract Thousand (1,000)
+            const thousands = Math.floor(num / 1000);
+            num %= 1000;
+
+            // Build result string
+            if (crores) {
+                result = convertBelowHundred(crores) + ' Crore';
+            }
+
+            if (lakhs) {
+                result = (result ? result + ' ' : '') + convertBelowHundred(lakhs) + ' Lakh';
+            }
+
+            if (thousands) {
+                result = (result ? result + ' ' : '') + convertBelowHundred(thousands) + ' Thousand';
+            }
+
+            if (num) {
+                result = (result ? result + ' ' : '') + convertBelowThousand(num);
+            }
+
+            return result.trim() + ' Rupees';
+        }
+
+        function updatePrincipalWords() {
+            const principal = parseFloat(document.getElementById('principal').value) || 0;
+            document.getElementById('principalWords').textContent = numberToWords(principal);
+        }
+
+        /* ============================================
+           FREQUENCY INPUT MANAGEMENT
+           ============================================ */
+        function updateFrequencyInputs() {
+            const frequency = document.getElementById('compoundFreq').value;
+            const dateRangeInputs = document.getElementById('dateRangeInputs');
+            const monthsInput = document.getElementById('monthsInput');
+            const yearsInput = document.getElementById('yearsInput');
+
+            // Hide all inputs first
+            dateRangeInputs.style.display = 'none';
+            monthsInput.style.display = 'none';
+            yearsInput.style.display = 'none';
+
+            // Show relevant input based on frequency
+            if (frequency === 'daily') {
+                dateRangeInputs.style.display = 'block';
+            } else if (frequency === 'monthly') {
+                monthsInput.style.display = 'block';
+            } else if (frequency === 'yearly') {
+                yearsInput.style.display = 'block';
+            }
+
+            // Recalculate after input change
+            calculateInterest();
+        }
+
+        /* ============================================
+           INTEREST CALCULATION
+           ============================================ */
+        function calculateInterest() {
+            const principal = parseFloat(document.getElementById('principal').value) || 0;
+            const rate = parseFloat(document.getElementById('rate').value) || 0;
+            const compoundFreq = document.getElementById('compoundFreq').value;
+
+            // Validate principal and rate
+            if (principal <= 0 || rate < 0) {
+                document.getElementById('periodLabel').textContent = 'Period:';
+                document.getElementById('resultPeriod').textContent = '0.00';
+                document.getElementById('resultInterestMonth').textContent = '₹0.00';
+                document.getElementById('resultSimpleInterest').textContent = '₹0.00';
+                document.getElementById('resultCompoundInterest').textContent = '₹0.00';
+                return;
+            }
+
+            let months = 0;
+            let periodDisplay = 0;
+            let periodLabel = 'Period:';
+
+            // Get months based on frequency type
+            if (compoundFreq === 'daily') {
+                const startDate = new Date(document.getElementById('startDate').value);
+                const endDate = new Date(document.getElementById('endDate').value);
+                const includeStart = document.getElementById('includeStart').checked;
+                const manualDays = parseFloat(document.getElementById('numDays').value);
+
+                // Use manual days if provided, otherwise calculate from date range
+                let days;
+                if (!isNaN(manualDays) && manualDays > 0) {
+                    days = manualDays;
+                } else {
+                    if (isNaN(startDate) || isNaN(endDate)) {
+                        document.getElementById('periodLabel').textContent = 'Period:';
+                        document.getElementById('resultPeriod').textContent = '0.00';
+                        document.getElementById('resultInterestMonth').textContent = '₹0.00';
+                        document.getElementById('resultSimpleInterest').textContent = '₹0.00';
+                        document.getElementById('resultCompoundInterest').textContent = '₹0.00';
+                        return;
+                    }
+
+                    // Calculate days between dates
+                    const timeDiff = endDate - startDate;
+                    days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+                    // Apply checkbox adjustments
+                    if (includeStart) days += 1;
+                }
+
+                periodDisplay = days;
+                periodLabel = 'Number of Days:';
+                // Convert days to months (using 30.44 avg days per month)
+                months = days / 30.44;
+            } else if (compoundFreq === 'monthly') {
+                months = parseFloat(document.getElementById('numMonths').value) || 0;
+                periodDisplay = months;
+                periodLabel = 'Number of Months:';
+            } else if (compoundFreq === 'yearly') {
+                const years = parseFloat(document.getElementById('numYears').value) || 0;
+                months = years * 12;
+                periodDisplay = years;
+                periodLabel = 'Number of Years:';
+            }
+
+            if (months <= 0) {
+                document.getElementById('periodLabel').textContent = periodLabel;
+                document.getElementById('resultPeriod').textContent = '0.00';
+                document.getElementById('resultInterestMonth').textContent = '₹0.00';
+                document.getElementById('resultSimpleInterest').textContent = '₹0.00';
+                document.getElementById('resultCompoundInterest').textContent = '₹0.00';
+                return;
+            }
+
+            // Calculate interest per month
+            const interestPerMonth = principal * (rate / 100);
+
+            // Calculate Simple Interest
+            const simpleInterest = interestPerMonth * months;
+
+            // Calculate Compound Interest
+            const monthlyRateDecimal = rate / 100;
+
+            // For compound interest: n = compounding times per month
+            let n = 1; // default to monthly
+            if (compoundFreq === 'daily') {
+                n = 1; // daily is treated as monthly in our case
+            } else if (compoundFreq === 'monthly') {
+                n = 1; // monthly compounding
+            } else if (compoundFreq === 'yearly') {
+                n = 1 / 12; // combined for 12 months = 1 year
+            }
+
+            const t = months; // time in months
+            const ratePerPeriod = monthlyRateDecimal / n; // rate per period
+
+            // CI = P(1 + r)^(nt) - P
+            const compoundInterest = principal * Math.pow(1 + ratePerPeriod, n * t) - principal;
+
+            // Display results (2 decimal places)
+            document.getElementById('periodLabel').textContent = periodLabel;
+            document.getElementById('resultPeriod').textContent = periodDisplay.toFixed(2);
+            document.getElementById('resultInterestMonth').textContent = '₹' + interestPerMonth.toFixed(2);
+            document.getElementById('resultSimpleInterest').textContent = '₹' + simpleInterest.toFixed(2);
+            document.getElementById('resultCompoundInterest').textContent = '₹' + compoundInterest.toFixed(2);
+
+            // Auto-save to history
+            if (compoundFreq === 'daily') {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                saveToHistory(principal, rate, startDate, endDate, simpleInterest, compoundInterest, compoundFreq);
+            } else {
+                const periodLabel_ = compoundFreq === 'monthly' ? document.getElementById('numMonths').value + ' months' : document.getElementById('numYears').value + ' years';
+                saveToHistory(principal, rate, periodLabel_, periodLabel_, simpleInterest, compoundInterest, compoundFreq);
+            }
+        }
+
+        function handleInputChange() {
+            calculateInterest();
+        }
+
+        function resetForm() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('principal').value = '10000';
+            document.getElementById('rate').value = '0.5';
+            document.getElementById('compoundFreq').value = 'daily';
+            document.getElementById('startDate').value = today;
+            document.getElementById('endDate').value = today;
+            document.getElementById('includeStart').checked = false;
+            document.getElementById('includeToday').checked = false;
+            document.getElementById('numMonths').value = '12';
+            document.getElementById('numYears').value = '1';
+            document.getElementById('numDays').value = '';
+            updateFrequencyInputs();
+        }
+
+        /* ============================================
+           HISTORY MANAGEMENT
+           ============================================ */
+        function saveToHistory(principal, rate, startDate, endDate, simpleInterest, compoundInterest, compoundFreq) {
+            let history = loadHistoryData();
+
+            // Add new entry
+            history.push({
+                principal: parseFloat(principal).toFixed(2),
+                rate: parseFloat(rate).toFixed(2),
+                startDate: typeof startDate === 'string' ? startDate : startDate.toISOString().split('T')[0],
+                endDate: typeof endDate === 'string' ? endDate : endDate.toISOString().split('T')[0],
+                simpleInterest: parseFloat(simpleInterest).toFixed(2),
+                compoundInterest: parseFloat(compoundInterest).toFixed(2),
+                timestamp: new Date().toLocaleString(),
+                compoundFreq: compoundFreq
+            });
+
+            // Keep only last 10 entries
+            if (history.length > 10) {
+                history = history.slice(-10);
+            }
+
+            localStorage.setItem('interestCalcHistory', JSON.stringify(history));
+            displayHistory(history);
+        }
+
+        function loadHistoryData() {
+            const stored = localStorage.getItem('interestCalcHistory');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function loadHistory() {
+            const history = loadHistoryData();
+            displayHistory(history);
+        }
+
+        function displayHistory(history) {
+            const historyList = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="history-empty">No calculations yet</div>';
+                return;
+            }
+
+            historyList.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        Principal: ₹${item.principal} @ ${item.rate}%/mo
+                    </div>
+                    <div class="history-item-detail">
+                        <span>${item.startDate} → ${item.endDate}</span>
+                    </div>
+                    <div class="history-item-detail" style="margin-top: 4px; font-size: 13px;">
+                        <span>SI: ₹${item.simpleInterest} | CI: ₹${item.compoundInterest}</span>
+                    </div>
+                    <div class="history-item-detail" style="margin-top: 6px;">
+                        <span>📅 ${item.timestamp}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            if (confirm('Clear all calculation history? This cannot be undone.')) {
+                localStorage.removeItem('interestCalcHistory');
+                displayHistory([]);
+            }
+        }
+
+        /* ============================================
+           COLLAPSIBLE SECTIONS
+           ============================================ */
+        function toggleSection(section) {
+            const content = document.getElementById(section + 'Content');
+            const toggle = document.getElementById(section + 'Toggle');
+
+            content.classList.toggle('open');
+            toggle.classList.toggle('open');
+        }
+
+
+
+        // Run initialization when page loads
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
